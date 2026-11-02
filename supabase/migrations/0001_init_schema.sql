@@ -353,7 +353,7 @@ begin
 end;
 $$ language plpgsql;
 
-create trigger article_versions_invalidate on article_versions
+create trigger article_versions_invalidate
 after insert on article_versions
 for each row execute function invalidate_old_approvals();
 
