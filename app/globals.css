@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   Amr Moussa — Personal Tech Hub · Design tokens
+   Editorial system: warm paper, deep ink, "pass-green" accent.
+   --------------------------------------------------------------- */
+
+:root {
+  --paper: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #181c19;
+  --ink-soft: #3d443f;
+  --muted: #6b726c;
+  --faint: #9aa29a;
+  --hairline: #e6e4db;
+  --hairline-strong: #d8d5c9;
+  --accent: #2e7d47;
+  --accent-soft: #e8f3ea;
+  --accent-ink: #1d5a32;
+  --code-bg: #10141f;
+  --code-ink: #dce2f0;
+
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+}
+
+.dark {
+  --paper: #0e100e;
+  --surface: #151814;
+  --ink: #ecebe6;
+  --ink-soft: #c4c8c1;
+  --muted: #9aa29a;
+  --faint: #6d746c;
+  --hairline: #262922;
+  --hairline-strong: #34382f;
+  --accent: #62d487;
+  --accent-soft: #16241b;
+  --accent-ink: #8fe8ac;
+  --code-bg: #0c0f18;
+  --code-ink: #dce2f0;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-code-bg: var(--code-bg);
+  --color-code-ink: var(--code-ink);
+
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01" on, "cv05" on;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---- long-read typography ------------------------------------- */
+
+.editorial {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.editorial > * + * {
+  margin-block-start: 1.15em;
+}
+
+.editorial h2,
+.editorial h3,
+.editorial h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  scroll-margin-top: 6rem;
+}
+
+.editorial h2 {
+  font-size: 1.6em;
+  line-height: 1.25;
+  margin-block-start: 2em;
+  margin-block-end: 0.6em;
+  text-wrap: balance;
+}
+
+.editorial h3 {
+  font-size: 1.25em;
+  margin-block-start: 1.6em;
+  margin-block-end: 0.45em;
+}
+
+.editorial p,
+.editorial li {
+  text-wrap: pretty;
+}
+
+.editorial a {
+  color: var(--accent-ink);
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklch, var(--accent-ink) 35%, transparent);
+  text-underline-offset: 3px;
+}
+
+.editorial a:hover {
+  text-decoration-color: var(--accent-ink);
+}
+
+.editorial strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.editorial ul,
+.editorial ol {
+  padding-inline-start: 1.4em;
+}
+
+.editorial ul {
+  list-style: disc;
+}
+
+.editorial ol {
+  list-style: decimal;
+}
+
+.editorial li::marker {
+  color: var(--faint);
+}
+
+.editorial li + li {
+  margin-block-start: 0.4em;
+}
+
+.editorial blockquote {
+  border-inline-start: 3px solid var(--accent);
+  padding: 0.35em 1.1em;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.08em;
+  background: var(--accent-soft);
+  border-radius: 0 10px 10px 0;
+}
+
+.editorial hr {
+  border: 0;
+  border-block-start: 1px solid var(--hairline);
+  margin-block: 2.4em;
+}
+
+.editorial table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  line-height: 1.5;
+}
+
+.editorial th {
+  text-align: start;
+  font-weight: 600;
+  color: var(--ink);
+  border-block-end: 2px solid var(--hairline-strong);
+  padding: 0.5em 0.75em;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editorial td {
+  border-block-end: 1px solid var(--hairline);
+  padding: 0.6em 0.75em;
+  vertical-align: top;
+}
+
+.editorial table code {
+  font-size: 0.9em;
+}
+
+.editorial img {
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+}
+
+/* inline code */
+.editorial :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+
+/* code blocks — dark always, Shiki dual theme */
+.editorial pre {
+  position: relative;
+  overflow-x: auto;
+  background: var(--code-bg) !important;
+  border: 1px solid #23273a;
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  font-size: 0.855em;
+  line-height: 1.7;
+}
+
+.editorial pre code {
+  font-family: var(--font-mono);
+  color: var(--code-ink);
+}
+
+.dark .editorial pre {
+  border-color: #23273a80;
+}
+
+/* Shiki dual-theme: honor the dark palette */
+html.dark .editorial .shiki,
+html.dark .editorial .shiki span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+[id] {
+  scroll-margin-top: 5.5rem;
+}
