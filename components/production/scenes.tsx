@@ -67,6 +67,45 @@ function rr(
 const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "ui-sans-serif, system-ui, sans-serif";
 
+/* photo assets per scene (AI-generated fictional people, like stock photos) */
+const SCENE_IMAGES: Record<SceneId, string[]> = {
+  hermes: [],
+  bitcoin: [],
+  microservices: [],
+  arabmatch: [
+    "/images/match-sara.jpg",
+    "/images/match-omar.jpg",
+    "/images/match-lina.jpg",
+  ],
+  lottery: [],
+  workout: ["/images/workout-hero.jpg"],
+};
+
+/* draw an image with object-fit: cover behavior */
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const r = w / h;
+  let sw = img.naturalWidth;
+  let sh = img.naturalHeight;
+  let sx = 0;
+  let sy = 0;
+  if (ir > r) {
+    sw = img.naturalHeight * r;
+    sx = (img.naturalWidth - sw) / 2;
+  } else {
+    sh = img.naturalWidth / r;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
 /* deterministic pseudo-random for stable chart shapes */
 function noise(i: number): number {
   const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
@@ -378,7 +417,12 @@ function microservices(ctx: CanvasRenderingContext2D, T: T, ts: number) {
 }
 
 /* ---------------- ARAB MATCH — dating ---------------- */
-function arabmatch(ctx: CanvasRenderingContext2D, T: T, ts: number) {
+function arabmatch(
+  ctx: CanvasRenderingContext2D,
+  T: T,
+  ts: number,
+  imgs: (HTMLImageElement | null)[]
+) {
   ctx.fillStyle = T.paper;
   ctx.fillRect(0, 0, W, H);
 
@@ -400,9 +444,9 @@ function arabmatch(ctx: CanvasRenderingContext2D, T: T, ts: number) {
   const cardIdx = Math.floor(ts / CYCLE) % 3;
 
   const profiles = [
-    { name: "سارة · Cairo, 27", emoji: "🦋", bio: "Backend dev · loves Espresso ☕" },
-    { name: "Omar · Dubai, 31", emoji: "🐪", bio: "iOS engineer · padel & oud" },
-    { name: "Lina · Amman, 25", emoji: "🎨", bio: "UX designer · sunrise runner" },
+    { name: "سارة · Cairo, 27", bio: "Backend dev · loves Espresso ☕", emoji: "🦋" },
+    { name: "Omar · Dubai, 31", bio: "iOS engineer · padel & oud", emoji: "🐪" },
+    { name: "Lina · Amman, 25", bio: "UX designer · sunrise runner", emoji: "🎨" },
   ];
   const p = profiles[cardIdx];
 
@@ -410,34 +454,73 @@ function arabmatch(ctx: CanvasRenderingContext2D, T: T, ts: number) {
   ctx.fillStyle = T.accentSoft;
   ctx.fillRect(px + 4, 20, 140, 240);
 
-  // the profile card (swiping)
+  // the profile card (photo card, swiping)
   ctx.save();
-  ctx.translate(px + 74 + dx, 105);
+  ctx.translate(px + 74 + dx, 128);
   ctx.rotate(rot);
   ctx.fillStyle = T.surface;
-  rr(ctx, -58, -76, 116, 152, 14);
+  rr(ctx, -64, -98, 128, 196, 14);
   ctx.fill();
   ctx.strokeStyle = T.hairline;
   ctx.stroke();
-  ctx.font = "34px sans-serif";
+  rr(ctx, -64, -98, 128, 196, 14);
+  ctx.clip();
+
+  const img = imgs[cardIdx];
+  if (img) {
+    drawCover(ctx, img, -64, -98, 128, 196);
+  } else {
+    ctx.fillStyle = T.accentSoft;
+    ctx.fillRect(-64, -98, 128, 196);
+    ctx.font = "30px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = T.muted;
+    ctx.fillText(p.emoji, 0, -30);
+  }
+
+  // name + bio over a photo gradient (Tinder-style)
+  const g = ctx.createLinearGradient(0, 30, 0, 98);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(0,0,0,0.74)");
+  ctx.fillStyle = g;
+  ctx.fillRect(-64, 30, 128, 68);
   ctx.textAlign = "center";
-  ctx.fillText(p.emoji, 0, -28);
-  ctx.fillStyle = T.ink;
-  ctx.font = `bold 9.5px ${SANS}`;
-  ctx.fillText(p.name, 0, -2);
-  ctx.fillStyle = T.muted;
-  ctx.font = `8.5px ${SANS}`;
-  ctx.fillText(p.bio, 0, 16);
+  ctx.fillStyle = "#fff";
+  ctx.font = `bold 11px ${SANS}`;
+  ctx.fillText(p.name, 0, 72);
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.font = `8px ${SANS}`;
+  ctx.fillText(p.bio, 0, 86);
+
   // like stamp appearing mid-swipe
   if (swipe > 0.25) {
     ctx.globalAlpha = Math.min(1, (swipe - 0.25) * 3);
     ctx.strokeStyle = T.accent;
     ctx.lineWidth = 3;
     ctx.font = `bold 16px ${SANS}`;
-    ctx.fillText("LIKE ❤", 0, 58);
+    ctx.fillStyle = T.accent;
+    ctx.fillText("LIKE ❤", 0, -58);
     ctx.globalAlpha = 1;
   }
   ctx.restore();
+
+  // action buttons row (pass / star / like)
+  const btns: [number, string, string][] = [
+    [206, "✕", T.danger],
+    [240, "★", T.faint],
+    [274, "❤", T.accent],
+  ];
+  for (const [bx, sym, col] of btns) {
+    ctx.beginPath();
+    ctx.arc(bx, 244, 8.5, 0, Math.PI * 2);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.fillStyle = col;
+    ctx.font = "8px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(sym, bx, 247);
+  }
 
   // rising hearts during swipe
   if (swipe > 0.15) {
@@ -469,10 +552,8 @@ function arabmatch(ctx: CanvasRenderingContext2D, T: T, ts: number) {
   ctx.font = `bold 12px ${SANS}`;
   ctx.textAlign = "left";
   ctx.fillText("Arab Match", 26, 60);
-  ctx.fillStyle = T.muted;
-  ctx.font = `10.5px ${SANS}`;
   const lines = [
-    "Profile discovery",
+    "Real profile photos",
     "Match & chat flows",
     "Arabic-first, RTL ready",
     "Privacy-critical by design",
@@ -618,7 +699,12 @@ function lottery(ctx: CanvasRenderingContext2D, T: T, ts: number) {
 }
 
 /* ---------------- WORKOUT ---------------- */
-function workout(ctx: CanvasRenderingContext2D, T: T, ts: number) {
+function workout(
+  ctx: CanvasRenderingContext2D,
+  T: T,
+  ts: number,
+  imgs: (HTMLImageElement | null)[]
+) {
   ctx.fillStyle = T.paper;
   ctx.fillRect(0, 0, W, H);
 
@@ -632,61 +718,91 @@ function workout(ctx: CanvasRenderingContext2D, T: T, ts: number) {
   rr(ctx, px + 4, 20, 140, 240, 18);
   ctx.clip();
 
-  // today's plan header
-  ctx.fillStyle = T.ink;
-  ctx.font = `bold 11px ${SANS}`;
-  ctx.textAlign = "center";
-  ctx.fillText("Today · Push day 💪", px + 74, 42);
+  // --- hero photo with overlay UI (real fitness-app look) ---
+  const hero = imgs[0];
+  if (hero) {
+    drawCover(ctx, hero, px + 4, 20, 140, 118);
+  } else {
+    ctx.fillStyle = T.accentSoft;
+    ctx.fillRect(px + 4, 20, 140, 118);
+  }
+  // dark gradient at photo bottom for legible UI
+  const hg = ctx.createLinearGradient(0, 78, 0, 138);
+  hg.addColorStop(0, "rgba(0,0,0,0)");
+  hg.addColorStop(1, "rgba(0,0,0,0.78)");
+  ctx.fillStyle = hg;
+  ctx.fillRect(px + 4, 78, 140, 60);
 
+  // workout title over photo
+  ctx.fillStyle = "#fff";
+  ctx.font = `bold 10.5px ${SANS}`;
+  ctx.textAlign = "left";
+  ctx.fillText("Push day 💪", px + 14, 128);
+
+  // live rep ring overlaid on the photo
+  const repInSet = (ts % 1250) / 1250;
+  const count = 1 + Math.floor(repInSet * 15);
+  const cx = px + 116;
+  const cy = 100;
+  ctx.lineWidth = 4.5;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 15, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 15, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * repInSet);
+  ctx.stroke();
+  ctx.fillStyle = "#fff";
+  ctx.font = `bold 8px ${MONO}`;
+  ctx.textAlign = "center";
+  ctx.fillText(`${count}/15`, cx, cy + 3);
+
+  // --- exercise list below the photo ---
   const EXS = ["Squats", "Push-ups", "Plank", "Pull-ups"];
   const done = Math.floor((ts / 5000) % 4);
-
-  // exercise list
   EXS.forEach((ex, i) => {
-    const y = 62 + i * 30;
+    const y = 150 + i * 24;
     const isCurrent = i === done;
     if (isCurrent) {
       ctx.fillStyle = T.accentSoft;
-      rr(ctx, px + 10, y - 15, 128, 26, 7);
+      rr(ctx, px + 10, y - 12, 128, 22, 6);
       ctx.fill();
     }
-    ctx.fillStyle = i < done ? T.accent : T.hairline;
     ctx.beginPath();
-    ctx.arc(px + 22, y - 2, 6, 0, Math.PI * 2);
+    ctx.arc(px + 20, y, 5, 0, Math.PI * 2);
     if (i < done) {
+      ctx.fillStyle = T.accent;
       ctx.fill();
       ctx.fillStyle = T.paper;
-      ctx.font = "7px sans-serif";
-      ctx.fillText("✓", px + 22, y);
+      ctx.font = "6px sans-serif";
+      ctx.fillText("✓", px + 20, y + 2);
     } else {
-      ctx.strokeStyle = T.hairline;
+      ctx.strokeStyle = isCurrent ? T.accent : T.hairline;
+      ctx.lineWidth = 1.3;
       ctx.stroke();
     }
     ctx.fillStyle = isCurrent ? T.ink : T.muted;
-    ctx.font = `${isCurrent ? "bold " : ""}10px ${SANS}`;
+    ctx.font = `${isCurrent ? "bold " : ""}9.5px ${SANS}`;
     ctx.textAlign = "left";
-    ctx.fillText(ex, px + 36, y + 2);
+    ctx.fillText(ex, px + 31, y + 3);
+    ctx.fillStyle = T.faint;
+    ctx.font = `8px ${MONO}`;
+    ctx.textAlign = "right";
+    ctx.fillText("3×12", px + 132, y + 3);
   });
 
-  // rep counter + ring
-  const reps = Math.floor((ts % 5000) / (5000 / 4));
-  const repInSet = (ts % 1250) / 1250;
-  const count = 1 + Math.floor(repInSet * 15);
-  const cx = px + 74;
-  const cy = 232;
-  ctx.strokeStyle = T.hairline;
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.strokeStyle = T.accent;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * repInSet);
-  ctx.stroke();
-  ctx.fillStyle = T.ink;
-  ctx.font = `bold 13px ${MONO}`;
-  ctx.textAlign = "center";
-  ctx.fillText(`${count}/15`, cx, cy + 5);
+  // rest timer pill
+  const resting = repInSet > 0.85;
+  if (resting) {
+    ctx.fillStyle = T.accentSoft;
+    rr(ctx, px + 10, 244, 128, 16, 6);
+    ctx.fill();
+    ctx.fillStyle = T.accent;
+    ctx.font = `bold 8.5px ${MONO}`;
+    ctx.textAlign = "center";
+    ctx.fillText(`REST ${String(Math.ceil((1 - repInSet) * 45)).padStart(2, "0")}s`, px + 74, 255);
+  }
 
   // side panel: stats
   ctx.textAlign = "left";
@@ -708,22 +824,17 @@ function workout(ctx: CanvasRenderingContext2D, T: T, ts: number) {
     ctx.font = `bold 12px ${MONO}`;
     ctx.fillText(v, 26, y + 16);
   });
-
-  // rest timer bar under stats
-  const restT = (ts % 5000) / 5000;
-  const resting = repInSet > 0.85;
-  if (resting) {
-    ctx.fillStyle = T.accentSoft;
-    rr(ctx, 26, 226, 120, 30, 7);
-    ctx.fill();
-    ctx.fillStyle = T.accent;
-    ctx.font = `bold 10px ${MONO}`;
-    ctx.fillText(`REST ${String(Math.floor((1 - repInSet) * 45)).padStart(2, "0")}s`, 36, 245);
-  }
 }
 
 /* ---------------- shared component ---------------- */
-const SCENES: Record<SceneId, (ctx: CanvasRenderingContext2D, T: T, ts: number) => void> = {
+type SceneFn = (
+  ctx: CanvasRenderingContext2D,
+  T: T,
+  ts: number,
+  imgs: (HTMLImageElement | null)[]
+) => void;
+
+const SCENES: Record<SceneId, SceneFn> = {
   hermes,
   bitcoin,
   microservices,
@@ -747,10 +858,34 @@ export function AppScene({ id, label }: { id: SceneId; label: string }) {
     ctx.scale(dpr, dpr);
 
     const draw = SCENES[id];
+    const sources = SCENE_IMAGES[id];
+
+    // start loading this scene's photos immediately; scenes draw
+    // gracefully with or without them
+    const store: Record<string, HTMLImageElement | null> = {};
+    const loaders = sources.map(
+      (src) =>
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            store[src] = img;
+            resolve();
+          };
+          img.onerror = () => {
+            store[src] = null;
+            resolve();
+          };
+          img.src = src;
+        })
+    );
+    const pick = () => sources.map((s) => store[s] ?? null);
+
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reduced) {
-      draw(ctx, readTheme(), 2000); // a representative static frame
+      Promise.all(loaders).then(() => {
+        draw(ctx, readTheme(), 2000, pick()); // a representative static frame
+      });
       return;
     }
 
@@ -759,7 +894,7 @@ export function AppScene({ id, label }: { id: SceneId; label: string }) {
     let theme = readTheme();
     const loop = (ts: number) => {
       if (frame % 20 === 0) theme = readTheme();
-      draw(ctx, theme, ts);
+      draw(ctx, theme, ts, pick());
       frame++;
       raf = requestAnimationFrame(loop);
     };
