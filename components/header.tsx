@@ -7,6 +7,7 @@ import { TopicsDropdown } from "@/components/topics-dropdown";
 const PRIMARY = [
   { href: "/articles", label: "Articles" },
   { href: "/projects", label: "Projects" },
+  { href: "/production", label: "Production" },
   { href: "/til", label: "TIL" },
   { href: "/playground", label: "Playground" },
   { href: "/about", label: "About" },

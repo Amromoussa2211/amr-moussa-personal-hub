@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArticleCard, ProjectCard, TiltItem } from "@/components/cards";
 import { SocialButtons } from "@/components/footer";
 import { HeroTestRun } from "@/components/hero-test-run";
+import { AppScene } from "@/components/production/scenes";
 import { getArticleMetas, getTiltMetas } from "@/lib/content";
 import { getProjects } from "@/lib/github";
 
@@ -175,6 +176,39 @@ export default async function HomePage() {
             <ProjectCard key={p.name} p={p} />
           ))}
         </div>
+      </section>
+
+      {/* ---- Production projects teaser ---- */}
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
+        <div className="mb-6 flex items-baseline justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+            Production projects
+          </h2>
+          <Link href="/production" className="text-sm text-accent-ink hover:underline">
+            All six →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {(
+            [
+              ["hermes", "Hermes — trading platform"],
+              ["arabmatch", "Arab Match — dating app"],
+              ["workout", "Workout — fitness tracking"],
+            ] as const
+          ).map(([id, label]) => (
+            <Link
+              key={id}
+              href="/production"
+              className="overflow-hidden rounded-2xl border border-hairline bg-surface transition-shadow hover:shadow-md"
+            >
+              <AppScene id={id} label={`Live animation preview: ${label}`} />
+            </Link>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-muted">
+          Trading, blockchain, microservices, dating, lottery &amp; loyalty, fitness — six
+          production domains, each with a live-rendered animation and the QA perspective it demands.
+        </p>
       </section>
 
       {/* ---- TIL ---- */}
