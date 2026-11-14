@@ -28,13 +28,15 @@ const STATUS_TONE: Record<string, string> = {
 
 async function getIdeas() {
   const supa = getSupabaseAdmin();
-  const { data } = await supa
+  const { data, error } = await supa
     .from("content_ideas")
     .select(
       "id, title, description, status, article_id, created_at, categories:category_id ( slug, name )"
     )
     .neq("status", "DISMISSED")
     .order("created_at", { ascending: false });
+
+  if (error) return null;
 
   type IdeaRow = {
     id: string;
@@ -54,6 +56,18 @@ async function getIdeas() {
 
 export default async function AdminIdeasPage() {
   const ideas = await getIdeas();
+
+  if (ideas === null) {
+    return (
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6">
+        <h1 className="font-display text-xl font-semibold text-ink">Database not initialized</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          The database schema hasn&apos;t been applied yet. Once the Supabase project is connected,
+          ideas will appear here.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
