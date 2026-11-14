@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { ArticleCard, ProjectCard, TiltItem } from "@/components/cards";
@@ -89,24 +90,16 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Profile placeholder — real photo replaces this in Phase 2 media upload */}
-          <div className="relative mx-auto hidden h-56 w-56 shrink-0 overflow-hidden rounded-[2rem] border border-hairline bg-surface lg:block" aria-hidden>
-            <svg viewBox="0 0 224 224" className="h-full w-full" role="img" aria-label="Portrait placeholder">
-              <defs>
-                <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="var(--accent-soft)" />
-                  <stop offset="1" stopColor="var(--paper)" />
-                </linearGradient>
-              </defs>
-              <rect width="224" height="224" fill="url(#pg)" />
-              <circle cx="112" cy="88" r="34" fill="var(--hairline-strong)" />
-              <path d="M48 200c8-42 34-62 64-62s56 20 64 62" fill="var(--hairline-strong)" />
-              <path d="M205 35l8 8m-23 9l13 5m-40-30l5 13m-45 3l-3 13" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-              <path d="M60 40c1-6 6-11 12-12M70 33c-5 1-10 6-12 12" stroke="var(--accent)" strokeWidth="1.4" fill="none"/>
-            </svg>
-            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-2.5 py-1 text-[10px] uppercase tracking-widest text-faint">
-              Photo placeholder
-            </span>
+          {/* Profile photo */}
+          <div className="relative mx-auto h-[232px] w-80 shrink-0 overflow-hidden rounded-[2rem] border border-hairline bg-surface shadow-sm lg:mt-1">
+            <Image
+              src="/images/amr-portrait.jpg"
+              alt="Amr Moussa"
+              width={640}
+              height={462}
+              priority
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
       </section>

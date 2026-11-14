@@ -37,11 +37,44 @@ export default function AboutPage() {
           Web, mobile, API, and microservices testing — the full stack, from the locators to the
           load profiles.
         </p>
+        <h2 className="pt-2 font-display text-lg font-semibold text-ink">
+          What those years actually taught me
+        </h2>
+        <p>
+          Products in FinTech and ERP don&apos;t forgive sloppy testing — a silently wrong number
+          or a lost transaction costs far more than a slow release. So my work has always circled
+          the same questions: which tests actually protect the business, which just look busy, and
+          how do you build automation that the whole team trusts on a Friday deploy. Testing web
+          apps, mobile apps, APIs, microservices, and the databases underneath them taught me that
+          the bugs worth catching rarely live where the test plan says they will.
+        </p>
+        <p>
+          As a Test Automation Lead, my job is less about writing every test and more about the
+          system around them: framework design that survives redesigns, execution strategies that
+          stay fast as suites grow, CI/CD quality gates that catch real problems without blocking
+          real work, and helping engineers across the team write tests they won&apos;t hate
+          maintaining.
+        </p>
         <p>
           Lately my main interest is the intersection of QA and AI: LLM-assisted test generation,
-          agentic QA workflows, and — more importantly — where that story is oversold. I write the
-          kind of articles I wanted to read when facing those decisions: honest about limits,
-          specific about technique, and grounded in projects that shipped.
+          agentic QA workflows, and — more importantly — where that story is oversold. I&apos;m
+          interested in what these tools genuinely change about how we test, and equally in the
+          failure modes nobody blogs about until it&apos;s their release on fire.
+        </p>
+        <h2 className="pt-2 font-display text-lg font-semibold text-ink">
+          What you&apos;ll find on this site
+        </h2>
+        <p>
+          Everything here is written from direct engineering practice: deep dives on Playwright and
+          framework architecture, API and backend testing technique, performance engineering that
+          respects the data, and honest reviews of AI-powered testing — short &quot;Today I
+          Learned&quot; notes when the insight is small, full articles when it deserves the depth.
+          If a technique is unproven, I say so. If something worked, I show the actual reasoning,
+          not just the happy path.
+        </p>
+        <p>
+          I write the kind of articles I wanted to read when facing these decisions: honest about
+          limits, specific about technique, and grounded in projects that shipped.
         </p>
         <p className="font-display text-lg text-ink">
           Engineering Quality. Automating Confidence. Exploring AI.
