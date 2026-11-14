@@ -24,6 +24,13 @@ const SOCIALS = [
     icon:
       "M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23Zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64Z",
   },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@Amro_kaza",
+    viewBox: "0 0 24 24",
+    icon:
+      "M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81ZM9.55 15.57V8.43L15.82 12l-6.27 3.57Z",
+  },
 ];
 
 export function SocialButtons({ size = "sm" }: { size?: "sm" | "lg" }) {
@@ -95,6 +102,11 @@ export function Footer() {
                 </a>
               </li>
             ))}
+            <li>
+              <a href="tel:+201143236791" className="text-muted hover:text-ink">
+                Phone: +20 114 323 6791
+              </a>
+            </li>
             <li><Link href="/contact" className="text-muted hover:text-ink">Contact</Link></li>
           </ul>
         </nav>

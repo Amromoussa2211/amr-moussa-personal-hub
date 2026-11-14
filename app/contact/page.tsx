@@ -15,6 +15,11 @@ const CHANNELS = [
     detail: "For consulting, test strategy reviews, or speaking.",
   },
   {
+    label: "Phone",
+    href: "tel:+201143236791",
+    detail: "Call or SMS: +20 114 323 6791.",
+  },
+  {
     label: "LinkedIn",
     href: "https://linkedin.com/in/amr-moussa-88a9676b/",
     detail: "Professional conversations and QA community.",
@@ -23,6 +28,11 @@ const CHANNELS = [
     label: "X / Twitter",
     href: "https://x.com/amro_kaza",
     detail: "Short-form technical takes and article announcements.",
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@Amro_kaza",
+    detail: "@Amro_kaza — video content on the same themes.",
   },
   {
     label: "GitHub",
