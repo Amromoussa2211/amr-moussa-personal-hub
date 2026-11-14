@@ -8,6 +8,7 @@ const PRIMARY = [
   { href: "/articles", label: "Articles" },
   { href: "/projects", label: "Projects" },
   { href: "/til", label: "TIL" },
+  { href: "/playground", label: "Playground" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
