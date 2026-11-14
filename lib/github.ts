@@ -134,6 +134,81 @@ export type ProjectMeta = Repo & {
   curated: boolean;
 };
 
+/** Real per-repo statistics from the GitHub API. Fetched per page-view with
+ *  ISR caching (revalidate daily) to stay inside unauthenticated rate limits.
+ *  Returns null fields on any API failure — pages degrade gracefully. */
+export type RepoDetail = {
+  commits: number | null;
+  sizeKb: number | null;
+  createdAt: string | null;
+  openIssues: number | null;
+  license: string | null;
+  languages: Record<string, number> | null; // bytes per language
+  githubDescription: string | null;
+};
+
+export async function getRepoDetail(name: string): Promise<RepoDetail> {
+  const empty: RepoDetail = {
+    commits: null,
+    sizeKb: null,
+    createdAt: null,
+    openIssues: null,
+    license: null,
+    languages: null,
+    githubDescription: null,
+  };
+  try {
+    const headers = {
+      Accept: "application/vnd.github+json",
+      "User-Agent": "amr-moussa-personal-hub",
+      ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+    };
+
+    // 1. repo metadata
+    const repoRes = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${encodeURIComponent(name)}`,
+      { headers, next: { revalidate: 86400 } }
+    );
+    if (!repoRes.ok) return empty;
+    const repo = (await repoRes.json()) as Record<string, unknown>;
+
+    // 2. language bytes breakdown
+    const langRes = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${encodeURIComponent(name)}/languages`,
+      { headers, next: { revalidate: 86400 } }
+    );
+    const languages = langRes.ok ? ((await langRes.json()) as Record<string, number>) : null;
+
+    // 3. total commits — from the pagination header of a 1-per-page list
+    const commitsRes = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${encodeURIComponent(name)}/commits?per_page=1`,
+      { headers, next: { revalidate: 86400 } }
+    );
+    let commits: number | null = null;
+    if (commitsRes.ok) {
+      const link = commitsRes.headers.get("link");
+      const last = link?.match(/[?&]page=(\d+)[^>]*>; rel="last"/);
+      commits = last ? Number(last[1]) : ((await commitsRes.json()) as unknown[]).length;
+    }
+
+    const license = repo.license;
+    return {
+      commits,
+      sizeKb: typeof repo.size === "number" ? repo.size : null,
+      createdAt: typeof repo.created_at === "string" ? repo.created_at : null,
+      openIssues: typeof repo.open_issues_count === "number" ? repo.open_issues_count : null,
+      license:
+        license && typeof license === "object" && license !== null
+          ? String((license as Record<string, unknown>).spdx_id ?? "")
+          : null,
+      languages: languages && Object.keys(languages).length > 0 ? languages : null,
+      githubDescription: typeof repo.description === "string" ? repo.description : null,
+    };
+  } catch {
+    return empty;
+  }
+}
+
 /** Public repos, enriched with curated editorial copy. Falls back to raw
  *  GitHub descriptions if network/API is unavailable. */
 export async function getProjects(): Promise<ProjectMeta[]> {

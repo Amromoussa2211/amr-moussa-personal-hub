@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getProjectDiagram, ProjectDiagram } from "@/components/project-diagram";
-import { getProjects } from "@/lib/github";
+import { LanguageChart } from "@/components/language-chart";
+import { ProjectDiagram } from "@/components/project-diagram";
+import { getProjects, getRepoDetail } from "@/lib/github";
 import { formatDate } from "@/lib/format";
 
-export function generateStaticParams() {
-  return getProjects().then((projects) => projects.map((p) => ({ name: p.name })));
-}
+export const revalidate = 86400; // detail stats cached per page for a day
 
 export async function generateMetadata({
   params,
@@ -27,6 +26,19 @@ export async function generateMetadata({
   };
 }
 
+function kb(sizeKb: number): string {
+  return sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-hairline bg-surface p-4">
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">{label}</dt>
+      <dd className="mt-1.5 font-display text-xl font-semibold text-ink">{value}</dd>
+    </div>
+  );
+}
+
 export default async function ProjectPage({
   params,
 }: {
@@ -38,7 +50,8 @@ export default async function ProjectPage({
   const project = projects.find((p) => p.name === decoded);
   if (!project) notFound();
 
-  const { layers } = getProjectDiagram(project);
+  const detail = await getRepoDetail(project.name);
+  const languageCount = detail.languages ? Object.keys(detail.languages).length : null;
 
   return (
     <div className="mx-auto max-w-3xl px-5 pt-10">
@@ -72,10 +85,67 @@ export default async function ProjectPage({
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-soft">
           {project.blurb || project.description}
         </p>
+        {detail.githubDescription && detail.githubDescription !== project.blurb && (
+          <blockquote className="mt-4 max-w-2xl rounded-xl border-l-2 border-accent bg-surface px-4 py-3 text-[13px] leading-relaxed text-muted">
+            {detail.githubDescription}
+            <span className="mt-1 block text-[11px] text-faint">— repository description, GitHub</span>
+          </blockquote>
+        )}
       </header>
 
-      {/* Diagram */}
+      {/* By the numbers — live GitHub statistics */}
       <section className="pt-10">
+        <h2 className="mb-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+          By the numbers
+        </h2>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            label="Commits"
+            value={detail.commits !== null ? detail.commits.toLocaleString("en-US") : "—"}
+          />
+          <StatCard
+            label="Repo size"
+            value={detail.sizeKb !== null ? kb(detail.sizeKb) : "—"}
+          />
+          <StatCard
+            label="Stars"
+            value={String(project.stars)}
+          />
+          <StatCard
+            label="Forks"
+            value={String(project.forks)}
+          />
+          <StatCard
+            label="Created"
+            value={detail.createdAt ? formatDate(detail.createdAt.slice(0, 10)) : "—"}
+          />
+          <StatCard
+            label="Open issues"
+            value={detail.openIssues !== null ? String(detail.openIssues) : "—"}
+          />
+          <StatCard
+            label="Languages"
+            value={languageCount !== null ? String(languageCount) : "—"}
+          />
+          <StatCard label="License" value={detail.license || "None declared"} />
+        </dl>
+        <p className="mt-3 text-[12px] text-faint">
+          All figures are live GitHub repository metadata, cached daily — nothing estimated.
+        </p>
+      </section>
+
+      {/* Language breakdown chart */}
+      {detail.languages && (
+        <section className="pt-12">
+          <h2 className="mb-5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+            Language breakdown
+          </h2>
+          <LanguageChart languages={detail.languages} />
+        </section>
+      )}
+
+      {/* Diagram */}
+      <section className="pt-12">
         <h2 className="mb-6 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
           How it&apos;s structured
         </h2>
@@ -86,7 +156,7 @@ export default async function ProjectPage({
         </p>
       </section>
 
-      {/* Info */}
+      {/* Features */}
       {project.features.length > 0 && (
         <section className="pt-12">
           <h2 className="mb-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
@@ -103,42 +173,8 @@ export default async function ProjectPage({
         </section>
       )}
 
-      {/* Metadata */}
-      <section className="pt-12">
-        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {project.language && (
-            <div className="rounded-2xl border border-hairline bg-surface p-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Language
-              </dt>
-              <dd className="mt-1.5 text-sm font-medium text-ink">{project.language}</dd>
-            </div>
-          )}
-          <div className="rounded-2xl border border-hairline bg-surface p-4">
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Last pushed
-            </dt>
-            <dd className="mt-1.5 text-sm font-medium text-ink">
-              {project.updatedAt ? formatDate(project.updatedAt.slice(0, 10)) : "—"}
-            </dd>
-          </div>
-          <div className="rounded-2xl border border-hairline bg-surface p-4">
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Stars
-            </dt>
-            <dd className="mt-1.5 text-sm font-medium text-ink">{project.stars}</dd>
-          </div>
-          <div className="rounded-2xl border border-hairline bg-surface p-4">
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Layers shown
-            </dt>
-            <dd className="mt-1.5 text-sm font-medium text-ink">{layers.length}</dd>
-          </div>
-        </dl>
-      </section>
-
       {/* Source */}
-      <section className="pt-12">
+      <section className="pb-4 pt-12">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-accent-soft px-6 py-5">
           <p className="text-sm text-ink-soft">
             The complete source code lives in the public repository.
