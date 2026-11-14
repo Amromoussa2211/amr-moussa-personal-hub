@@ -6,7 +6,7 @@ const NAV = [
   { section: "Content", items: [
     { href: "/admin", label: "Overview", active: true, soon: false },
     { href: "/admin/articles", label: "Articles & Workflow", soon: false },
-    { href: "#", label: "Content Ideas", soon: true },
+    { href: "/admin/ideas", label: "Content Ideas", soon: false },
     { href: "#", label: "Research Queue", soon: true },
     { href: "#", label: "Media Library", soon: true },
     { href: "#", label: "Content Calendar", soon: true },
