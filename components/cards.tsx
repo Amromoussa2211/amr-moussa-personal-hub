@@ -63,10 +63,8 @@ export function TiltItem({ t }: { t: TiltMeta }) {
 
 export function ProjectCard({ p }: { p: ProjectMeta }) {
   return (
-    <a
-      href={p.htmlUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/projects/${encodeURIComponent(p.name)}`}
       className="group flex flex-col gap-2 rounded-2xl border border-hairline bg-surface p-5 transition-all hover:border-hairline-strong hover:shadow-sm"
     >
       <div className="flex items-center justify-between">
@@ -80,12 +78,11 @@ export function ProjectCard({ p }: { p: ProjectMeta }) {
       </h3>
       <p className="text-[13px] leading-relaxed text-muted line-clamp-3">{p.blurb}</p>
       <div className="mt-auto flex items-center gap-3 pt-2 text-[12px] text-faint">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="shrink-0">
-          <path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 3 22l1.5-4.5L17 3Z" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span>Source on GitHub</span>
+        <span className="transition-colors group-hover:text-accent-ink">
+          Project breakdown →
+        </span>
         {p.stars > 0 && <span>★ {p.stars}</span>}
       </div>
-    </a>
+    </Link>
   );
 }
