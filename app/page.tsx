@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ArticleCard, ProjectCard, TiltItem } from "@/components/cards";
 import { SocialButtons } from "@/components/footer";
+import { HeroTestRun } from "@/components/hero-test-run";
 import { getArticleMetas, getTiltMetas } from "@/lib/content";
 import { getProjects } from "@/lib/github";
 
@@ -54,7 +55,7 @@ export default async function HomePage() {
       {/* ---- Hero ---- */}
       <section className="mx-auto max-w-6xl px-5 pt-14 sm:pt-20">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_auto]">
-          <div>
+          <div data-reveal>
             <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
               Senior QA Engineer · Test Automation Lead
             </p>
@@ -91,22 +92,30 @@ export default async function HomePage() {
           </div>
 
           {/* Profile photo */}
-          <div className="relative mx-auto h-[232px] w-80 shrink-0 overflow-hidden rounded-[2rem] border border-hairline bg-surface shadow-sm lg:mt-1">
-            <Image
-              src="/images/amr-portrait.jpg"
-              alt="Amr Moussa"
-              width={640}
-              height={462}
-              priority
-              className="h-full w-full object-cover"
-            />
+          <div className="mx-auto w-80 shrink-0 lg:mt-1">
+            <div className="relative h-[232px] overflow-hidden rounded-[2rem] border border-hairline bg-surface shadow-sm">
+              <Image
+                src="/images/amr-portrait.jpg"
+                alt="Amr Moussa"
+                width={640}
+                height={462}
+                priority
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div
+              data-reveal
+              className="mt-4 overflow-hidden rounded-[2rem] border border-hairline bg-surface shadow-sm"
+            >
+              <HeroTestRun />
+            </div>
           </div>
         </div>
       </section>
 
       {/* ---- Featured article ---- */}
       {featured && (
-        <section className="mx-auto max-w-6xl px-5 pt-16">
+        <section data-reveal className="mx-auto max-w-6xl px-5 pt-16">
           <div className="rounded-3xl border border-hairline bg-surface p-7 sm:p-10">
             <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
               Featured article
@@ -117,7 +126,7 @@ export default async function HomePage() {
       )}
 
       {/* ---- Expertise ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
           What I work with
         </h2>
@@ -135,7 +144,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Latest articles ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <div className="mb-6 flex items-baseline justify-between">
           <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
             Latest writing
@@ -152,7 +161,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Projects ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <div className="mb-6 flex items-baseline justify-between">
           <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
             Projects
@@ -169,7 +178,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- TIL ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
             Today I Learned
@@ -186,7 +195,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Experience ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
           Professional experience
         </h2>
@@ -202,7 +211,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Newsletter ---- */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
+      <section data-reveal className="mx-auto max-w-6xl px-5 pt-20">
         <div className="rounded-3xl border border-hairline bg-accent-soft p-7 sm:p-10">
           <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
             <div>

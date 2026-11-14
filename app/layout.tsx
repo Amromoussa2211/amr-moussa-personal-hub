@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
 
 import { BackToTop } from "@/components/back-to-top";
+import { ClickEffects } from "@/components/click-effects";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 import "./globals.css";
 
@@ -64,6 +66,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1" id="top">{children}</main>
           <Footer />
           <BackToTop />
+          <ClickEffects />
+          <ScrollReveal />
         </div>
       </body>
     </html>
