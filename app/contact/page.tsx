@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CopyEmail } from "@/components/copy-email";
 import { SocialButtons } from "@/components/footer";
 
 export const metadata: Metadata = {
@@ -86,6 +87,10 @@ export default function ContactPage() {
           Or find me here
         </p>
         <SocialButtons size="lg" />
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <span className="text-sm text-muted">amro_kaza@hotmail.com</span>
+          <CopyEmail email="amro_kaza@hotmail.com" />
+        </div>
       </div>
     </div>
   );

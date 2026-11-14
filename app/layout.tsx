@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
 
+import { BackToTop } from "@/components/back-to-top";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 
@@ -60,8 +61,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${newsreader.variable} ${inter.variable} ${jetbrains.variable}`}>
         <div className="flex min-h-dvh flex-col">
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1" id="top">{children}</main>
           <Footer />
+          <BackToTop />
         </div>
       </body>
     </html>

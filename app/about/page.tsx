@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { PhotoGallery } from "@/components/photo-gallery";
 import { SocialButtons } from "@/components/footer";
 
 export const metadata: Metadata = {
@@ -98,6 +99,24 @@ export default function AboutPage() {
           </div>
         ))}
       </div>
+
+      {/* Beyond the desk */}
+      <section className="pt-12">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+          Beyond the desk
+        </h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted">
+          A few frames off the clock — with friends, colleagues, and travels. Click any photo to
+          enlarge it.
+        </p>
+        <PhotoGallery
+          photos={[
+            { src: "/images/gallery-evening.jpg", alt: "Evening outdoors with friends" },
+            { src: "/images/gallery-colleague.jpg", alt: "With a colleague" },
+            { src: "/images/gallery-marina.jpg", alt: "At the marina at night" },
+          ]}
+        />
+      </section>
 
       <div className="mt-12 rounded-2xl border border-hairline bg-surface p-6">
         <p className="text-sm leading-relaxed text-muted">
