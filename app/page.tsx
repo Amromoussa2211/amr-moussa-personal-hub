@@ -110,6 +110,22 @@ export default async function HomePage() {
             >
               <HeroTestRun />
             </div>
+            <div
+              data-reveal
+              className="mt-4 overflow-hidden rounded-[2rem] border border-hairline bg-surface shadow-sm"
+            >
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                src="/videos/cat-vs-pro-short.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="My coding meme short: Beginner programmer vs Pro programmer cat, reversing a sentence in one line"
+                className="h-full w-full"
+              />
+            </div>
           </div>
         </div>
       </section>
