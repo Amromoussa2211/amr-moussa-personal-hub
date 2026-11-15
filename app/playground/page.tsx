@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 
 import { BugHunt } from "@/components/playground/bug-hunt";
+import { BugSquash } from "@/components/playground/bug-squash";
+import { PassOrFail } from "@/components/playground/pass-or-fail";
 import { QaQuiz } from "@/components/playground/qa-quiz";
+import { SpotBug } from "@/components/playground/spot-bug";
 import { SwipeDemo } from "@/components/playground/swipe-demo";
+import { TriageRush } from "@/components/playground/triage-rush";
 
 export const metadata: Metadata = {
   title: "Playground",
   description:
-    "Entertainment corner: a bug-hunting mini-game, a QA quiz with a game certificate, and a swipe-UI demo. All games, all fun, nothing real is claimed.",
+    "Entertainment corner: seven games and demos — bug hunting, code reading, severity triage, API judgment calls, a QA quiz with a game certificate, and a swipe-UI demo. All fun, nothing real is claimed.",
 };
 
 export default function PlaygroundPage() {
@@ -44,6 +48,42 @@ export default function PlaygroundPage() {
           🎯 QA quiz — earn your game certificate
         </h2>
         <QaQuiz />
+      </section>
+
+      {/* --- Spot the Bug in Code --- */}
+      <section className="pt-14">
+        <h2 className="mb-5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+          🎯 Spot the Bug in Code
+        </h2>
+        <SpotBug />
+      </section>
+
+      {/* --- Triage Rush --- */}
+      <section className="pt-14">
+        <h2 className="mb-5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+          🚨 Triage Rush — severity in 60 seconds
+        </h2>
+        <TriageRush />
+      </section>
+
+      {/* --- Pass or Fail --- */}
+      <section className="pt-14">
+        <h2 className="mb-5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+          ⚡ Pass or Fail? — API quick-fire
+        </h2>
+        <PassOrFail />
+      </section>
+
+      {/* --- Bug Squash --- */}
+      <section className="pt-14">
+        <div className="mb-5 flex items-baseline justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-faint">
+            🐛 Bug Squash — 30s time attack
+          </h2>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-hairline">
+          <BugSquash />
+        </div>
       </section>
 
       {/* --- Swipe demo --- */}
