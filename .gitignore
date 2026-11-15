@@ -28,3 +28,6 @@ yarn-error.log*
 # vercel
 .vercel
 .env*
+shorts/cat-meme/frames/
+shorts/cat-meme/preview/
+shorts/cat-meme/*.mp4

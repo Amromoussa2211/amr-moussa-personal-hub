@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Beginner vs Pro — cat meme</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  canvas { display: block; width: 1080px; height: 1920px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+/*
+ * "Beginner 🥺 vs Pro 😎" cat meme — 30s vertical short, 30fps, 900 frames.
+ * Fully deterministic: frame f -> one drawn image. render.mjs screenshots it.
+ * Layout mirrors the Code With D reference: dark navy bg, glowing neon frame,
+ * cat behind a laptop, code card with typing + Run button, terminal output card.
+ */
+const cv = document.getElementById("c");
+const ctx = cv.getContext("2d");
+const W = 1080, H = 1920;
+
+const MONO = '"SF Mono", ui-monospace, Menlo, monospace';
+const SANS = '"Helvetica Neue", ui-sans-serif, system-ui, sans-serif';
+
+/* ---------- helpers ---------- */
+const fract = (x) => x - Math.floor(x);
+const R = (i) => fract(Math.sin(i * 127.1 + 311.7) * 43758.5453); // deterministic noise
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const easeOutBack = (t) => {
+  const c = 1.70158;
+  t = clamp(t, 0, 1);
+  return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+};
+function rr(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+
+/* ---------- code shown in the cards (lines of colored segments) ---------- */
+const BEGINNER_LINES = [
+  [["# reverse the sentence... slowly 😤", "comment"]],
+  [["def ", "kw"], ["reverse_words", "fn"], ["(sentence):", "plain"]],
+  [["    words = sentence.", "plain"], ["split", "fn"], ["()", "plain"]],
+  [["    new_words = []", "plain"]],
+  [["    i = ", "plain"], ["len", "fn"], ["(words) - ", "plain"], ["1", "num"]],
+  [["    ", "plain"], ["while", "kw"], [" i >= ", "plain"], ["0", "num"], [":", "plain"]],
+  [["        new_words.", "plain"], ["append", "fn"], ["(words[i])", "plain"]],
+  [["        i = i - ", "plain"], ["1", "num"]],
+  [["    result = ", "plain"], ["\"\"", "str"]],
+  [["    ", "plain"], ["for", "kw"], [" w ", "plain"], ["in", "kw"], [" new_words:", "plain"]],
+  [["        result = result + ", "plain"], ["\" \"", "str"], [" + w", "plain"]],
+  [["    result = result.", "plain"], ["strip", "fn"], ["()", "plain"]],
+  [["    ", "plain"], ["return", "kw"], [" result", "plain"]],
+];
+const PRO_LINES = [
+  [["def ", "kw"], ["reverse_words", "fn"], ["(sentence):", "plain"]],
+  [["    ", "plain"], ["return", "kw"], [" ", "plain"], ["' '", "str"], [".", "plain"],
+   ["join", "fn"], ["(sentence.", "plain"], ["split", "fn"], ["()[::-", "plain"], ["1", "num"], ["])", "plain"]],
+];
+const OUT_TEXT = "much! so Python love I";
+
+const COL = {
+  plain: "#e5e7eb", kw: "#c084fc", fn: "#38bdf8", str: "#fbbf24",
+  num: "#f472b6", comment: "#64748b",
+};
+const lineText = (lines) => lines.map((segs) => segs.map((s) => s[0]).join("")).join("");
+
+/* ---------- scene timeline ---------- */
+const S1_END = 360, S2_END = 750;
+const B_CHARS = lineText(BEGINNER_LINES).length;
+const P_CHARS = lineText(PRO_LINES).length;
+const typedCount = (t0, t1, f, total) =>
+  Math.floor(clamp((f - t0) / (t1 - t0), 0, 1) * total);
+
+/* ---------- background & chrome ---------- */
+function drawBackground(f) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#0c1030");
+  g.addColorStop(0.55, "#0a0e27");
+  g.addColorStop(1, "#070a1d");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 110; i++) {
+    const x = R(i) * W, y = R(i + 500) * H;
+    const tw = 0.25 + 0.55 * Math.abs(Math.sin(f / (30 + R(i + 90) * 40) + R(i) * 6));
+    ctx.fillStyle = `rgba(148,163,255,${0.16 * tw})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5 + R(i + 77) * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawNeonFrame() {
+  ctx.save();
+  ctx.strokeStyle = "#38e1ff";
+  ctx.lineWidth = 9;
+  ctx.shadowColor = "rgba(56,225,255,0.8)";
+  ctx.shadowBlur = 34;
+  rr(ctx, 26, 26, W - 52, H - 52, 46);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTitle() {
+  const pw = 850, ph = 104, px = (W - pw) / 2, py = 64;
+  ctx.fillStyle = "rgba(255,255,255,0.055)";
+  rr(ctx, px, py, pw, ph, 26);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(56,225,255,0.35)";
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `bold 50px ${SANS}`;
+  ctx.fillText("Beginner 🥺 vs Pro 😎", W / 2, py + 50);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `500 30px ${SANS}`;
+  ctx.fillText("reverse a sentence in one line 🔁", W / 2, py + 88);
+}
+
+function drawChip(f, mode) {
+  const label = mode === "b" ? "Beginner 🥺 · 10+ lines" : "Pro 😎 · 1 line";
+  const color = mode === "b" ? "#f59e0b" : "#22d3ee";
+  const tIn = mode === "b" ? clamp(f / 20, 0, 1) : clamp((f - S1_END) / 20, 0, 1);
+  if (tIn <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = tIn;
+  ctx.translate((1 - easeOutBack(tIn)) * -40, 0);
+  ctx.font = `bold 34px ${SANS}`;
+  const cw = ctx.measureText(label).width + 72;
+  const ch = 70, cx = 84, cy = 196;
+  ctx.fillStyle = color;
+  rr(ctx, cx, cy, cw, ch, 35);
+  ctx.fill();
+  ctx.fillStyle = mode === "b" ? "#20130a" : "#06222b";
+  ctx.textAlign = "center";
+  ctx.fillText(label, cx + cw / 2, cy + 47);
+  ctx.restore();
+}
+
+/* ---------- the cat ---------- */
+function drawCat(f, mode, typing) {
+  const bob = typing ? Math.sin(f / 3.4) * 5 : Math.sin(f / 42) * 3;
+  const cx = 540, hy = 448 + bob;
+
+  // body behind laptop
+  ctx.fillStyle = "#f59e0b";
+  rr(ctx, cx - 150, hy + 50, 300, 150, 64);
+  ctx.fill();
+  ctx.fillStyle = "#fde68a";
+  ctx.beginPath();
+  ctx.ellipse(cx, hy + 168, 64, 40, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // tail sway
+  ctx.strokeStyle = "#f59e0b";
+  ctx.lineWidth = 32;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx + 138, hy + 168);
+  ctx.quadraticCurveTo(cx + 238, hy + 140 + Math.sin(f / 26) * 24, cx + 258, hy + 56 + Math.sin(f / 26) * 28);
+  ctx.stroke();
+
+  // ears
+  for (const s of [-1, 1]) {
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 58, hy - 108);
+    ctx.lineTo(cx + s * 118, hy - 168);
+    ctx.lineTo(cx + s * 128, hy - 82);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#fb7185";
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 82, hy - 108);
+    ctx.lineTo(cx + s * 112, hy - 144);
+    ctx.lineTo(cx + s * 116, hy - 98);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // head
+  ctx.fillStyle = "#f59e0b";
+  ctx.beginPath();
+  ctx.arc(cx, hy, 140, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#d97706";
+  ctx.lineWidth = 12;
+  ctx.lineCap = "round";
+  for (const sx of [-58, 0, 58]) {
+    ctx.beginPath();
+    ctx.moveTo(cx + sx, hy - 136);
+    ctx.lineTo(cx + sx * 0.7, hy - 98);
+    ctx.stroke();
+  }
+  // muzzle
+  ctx.fillStyle = "#fde68a";
+  ctx.beginPath();
+  ctx.ellipse(cx, hy + 56, 88, 56, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // nose
+  ctx.fillStyle = "#fb7185";
+  ctx.beginPath();
+  ctx.moveTo(cx - 12, hy + 30);
+  ctx.lineTo(cx + 12, hy + 30);
+  ctx.lineTo(cx, hy + 47);
+  ctx.closePath();
+  ctx.fill();
+
+  if (mode === "b") drawBeginnerFace(f, cx, hy);
+  else drawProFace(f, cx, hy, easeOutBack((f - S1_END) / 16));
+}
+
+function drawBeginnerFace(f, cx, hy) {
+  const blink = fract(f / 78) < 0.09 ? 0.12 : 1;
+  ctx.strokeStyle = "#b45309";
+  ctx.lineWidth = 9;
+  ctx.lineCap = "round";
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 28, hy - 46 - s * 4);
+    ctx.lineTo(cx + s * 72, hy - 30);
+    ctx.stroke();
+  }
+  for (const s of [-1, 1]) {
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(cx + s * 48, hy - 4, 25, 28 * blink, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1f2937";
+    ctx.beginPath();
+    ctx.ellipse(cx + s * 48 + 4, hy + 5 + (1 - blink) * 8, 11, 14 * blink, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = "#7c2d12";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(cx - 32, hy + 80);
+  ctx.quadraticCurveTo(cx - 16, hy + 69, cx, hy + 80);
+  ctx.quadraticCurveTo(cx + 16, hy + 91, cx + 32, hy + 80);
+  ctx.stroke();
+  const d = fract(f / 46);
+  ctx.globalAlpha = 0.9 * (1 - d * 0.55);
+  ctx.fillStyle = "#7dd3fc";
+  ctx.beginPath();
+  ctx.moveTo(cx + 108, hy - 88 + d * 60);
+  ctx.quadraticCurveTo(cx + 125, hy - 56 + d * 60, cx + 108, hy - 40 + d * 60);
+  ctx.quadraticCurveTo(cx + 91, hy - 56 + d * 60, cx + 108, hy - 88 + d * 60);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawProFace(f, cx, hy, glassesT) {
+  if (glassesT > 0) {
+    ctx.save();
+    ctx.translate(cx, hy - 6);
+    const s = 0.4 + 0.6 * glassesT;
+    ctx.scale(s, s);
+    ctx.fillStyle = "#111827";
+    rr(ctx, -102, -28, 204, 58, 24);
+    ctx.fill();
+    ctx.fillStyle = "#0b1020";
+    for (const side of [-1, 1]) {
+      rr(ctx, side === -1 ? -95 : 13, -20, 82, 42, 17);
+      ctx.fill();
+    }
+    ctx.strokeStyle = "rgba(56,225,255,0.85)";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(-78, -7);
+    ctx.lineTo(-48, -15);
+    ctx.stroke();
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(-102, -5);
+    ctx.lineTo(-141, 4);
+    ctx.moveTo(102, -5);
+    ctx.lineTo(141, 4);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.strokeStyle = "#7c2d12";
+  ctx.lineWidth = 8;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - 34, hy + 72);
+  ctx.quadraticCurveTo(cx + 9, hy + 96, cx + 44, hy + 60);
+  ctx.stroke();
+}
+
+/* ---------- laptop ---------- */
+function drawLaptop(f, typing) {
+  const lx = 540 - 320, ly = 592, lw = 640, lh = 288;
+  ctx.fillStyle = "#0f1526";
+  rr(ctx, lx, ly, lw, lh, 30);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(56,225,255,0.5)";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.fillStyle = "rgba(56,225,255,0.9)";
+  ctx.font = `bold 62px ${MONO}`;
+  ctx.textAlign = "center";
+  ctx.fillText("{ }", 540, ly + 182);
+  ctx.fillStyle = "rgba(56,225,255,0.16)";
+  rr(ctx, lx + 26, ly + 24, lw - 52, 10, 5);
+  ctx.fill();
+  for (let p = 0; p < 2; p++) {
+    const px = 470 + p * 140;
+    const up = typing && (Math.floor(f / 5) + p) % 2 === 0 ? -12 : 0;
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(px, ly + 6 + up, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 3;
+    for (let k = -1; k <= 1; k++) {
+      ctx.beginPath();
+      ctx.moveTo(px + k * 9, ly - 12 + up);
+      ctx.lineTo(px + k * 9, ly - 2 + up);
+      ctx.stroke();
+    }
+  }
+}
+
+/* ---------- code card ---------- */
+const CODE = { x: 84, y: 910, w: W - 168, h: 630, lh: 44, fs: 34 };
+
+function drawCodeCard(f, lines, typedChars, pressed, typing) {
+  const { x: kx, y: ky, w: kw, h: kh, lh, fs } = CODE;
+  ctx.fillStyle = "#0c1222";
+  rr(ctx, kx, ky, kw, kh, 34);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(148,163,184,0.28)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = ["#ef4444", "#f59e0b", "#22c55e"][i];
+    ctx.beginPath();
+    ctx.arc(kx + 46 + i * 40, ky + 44, 13, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#64748b";
+  ctx.font = `26px ${MONO}`;
+  ctx.textAlign = "left";
+  ctx.fillText("main.py", kx + 170, ky + 53);
+
+  const font = `${fs}px ${MONO}`;
+  ctx.font = font;
+  let shown = typedChars;
+  let y = ky + 104;
+  for (const segs of lines) {
+    const text = segs.map((s) => s[0]).join("");
+    if (shown <= 0) break;
+    ctx.save();
+    rr(ctx, kx, ky, kw, kh, 34);
+    ctx.clip();
+    let x = kx + 40;
+    let remaining = shown;
+    for (const [txt, kind] of segs) {
+      const take = txt.slice(0, Math.max(0, remaining));
+      ctx.fillStyle = COL[kind] || COL.plain;
+      ctx.fillText(take, x, y);
+      x += ctx.measureText(take).width;
+      remaining -= txt.length;
+      if (remaining <= 0) break;
+    }
+    ctx.restore();
+    shown -= text.length + 1;
+    y += lh;
+    if (y > ky + kh - 26) break;
+  }
+
+  if (typing && Math.floor(f / 6) % 2 === 0) {
+    ctx.fillStyle = "#38e1ff";
+    ctx.fillRect(kx + 40, y - 30, 18, 38);
+  }
+
+  const bx = kx + kw - 175, by = ky + 14;
+  ctx.save();
+  ctx.translate(bx + 75, by + 28);
+  ctx.scale(pressed ? 0.92 : 1, pressed ? 0.92 : 1);
+  ctx.fillStyle = pressed ? "#1d4ed8" : "#2563eb";
+  rr(ctx, -75, -28, 150, 56, 16);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = `bold 32px ${SANS}`;
+  ctx.textAlign = "center";
+  ctx.fillText("▶ Run", 0, 10);
+  ctx.restore();
+}
+
+/* ---------- output card ---------- */
+const OUTC = { x: 84, y: 1580, w: W - 168, h: 190 };
+
+function drawOutputCard(f, outChars, note) {
+  const { x: ox, y: oy, w: ow, h: oh } = OUTC;
+  ctx.fillStyle = "#060a18";
+  rr(ctx, ox, oy, ow, oh, 30);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(148,163,184,0.25)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = "#475569";
+  ctx.font = `24px ${MONO}`;
+  ctx.textAlign = "left";
+  ctx.fillText("terminal", ox + 40, oy + 42);
+
+  ctx.font = `bold 44px ${MONO}`;
+  ctx.fillStyle = "#38e1ff";
+  ctx.fillText(">>>", ox + 40, oy + 112);
+  const shown = OUT_TEXT.slice(0, outChars);
+  ctx.fillStyle = "#f1f5f9";
+  ctx.fillText(shown, ox + 160, oy + 112);
+  if (outChars > 0 && outChars < OUT_TEXT.length && Math.floor(f / 6) % 2 === 0) {
+    ctx.fillStyle = "#38e1ff";
+    ctx.fillRect(ox + 160 + ctx.measureText(shown).width, oy + 80, 16, 38);
+  }
+  if (note) {
+    ctx.fillStyle = "#22c55e";
+    ctx.font = `bold 30px ${MONO}`;
+    ctx.fillText(note, ox + 40, oy + 168);
+  }
+}
+
+/* ---------- final stamp ---------- */
+function drawStamp(f) {
+  const p = clamp((f - S2_END - 5) / 22, 0, 1);
+  if (p <= 0) return;
+  const t = easeOutBack(p);
+  ctx.save();
+  ctx.translate(W / 2, 1260);
+  ctx.rotate(-0.045);
+  ctx.scale(t, t);
+  ctx.globalAlpha = clamp(t, 0, 1);
+  ctx.shadowColor = "rgba(34,211,238,0.7)";
+  ctx.shadowBlur = 40;
+  ctx.fillStyle = "#22d3ee";
+  rr(ctx, -430, -92, 860, 184, 36);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#06222b";
+  ctx.textAlign = "center";
+  ctx.font = `bold 60px ${SANS}`;
+  ctx.fillText("Same result. One line. ✔", 0, 21);
+  ctx.restore();
+
+  for (let i = 0; i < 10; i++) {
+    const a = fract(f / 60 + R(i + 3) * 6);
+    const sx = W / 2 + Math.cos(R(i) * 6.28) * (300 + R(i + 9) * 130);
+    const sy = 1260 + Math.sin(R(i + 5) * 6.28) * (140 + R(i + 11) * 90) - a * 60;
+    ctx.globalAlpha = (1 - a) * 0.9;
+    ctx.fillStyle = "#a5f3fc";
+    ctx.font = `${26 + R(i + 2) * 16}px ${SANS}`;
+    ctx.textAlign = "center";
+    ctx.fillText("✦", sx, sy);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ambient sparkles in the empty side/bottom zones (reference style) */
+const AMBIENT = [
+  [140, 640], [95, 782], [182, 844], [932, 662], [1002, 764], [906, 852],
+  [205, 1800], [880, 1796], [540, 1806],
+];
+function drawAmbient(f) {
+  for (let i = 0; i < AMBIENT.length; i++) {
+    const [x, y] = AMBIENT[i];
+    const a = 0.18 + 0.62 * Math.abs(Math.sin(f / (22 + i * 3) + i * 1.7));
+    ctx.globalAlpha = a;
+    ctx.fillStyle = i % 3 === 0 ? "#e0f2fe" : "#a5f3fc";
+    ctx.font = `${22 + R(i + 41) * 18}px ${SANS}`;
+    ctx.textAlign = "center";
+    ctx.fillText("✦", x, y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ---------- watermark ---------- */
+function drawWatermark() {
+  ctx.fillStyle = "rgba(148,163,184,0.4)";
+  ctx.font = `500 30px ${SANS}`;
+  ctx.textAlign = "center";
+  ctx.fillText("@Amro_kaza", W / 2, 1848);
+}
+
+/* ================= draw one frame ================= */
+function draw(f) {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground(f);
+  drawAmbient(f);
+
+  const mode = f < S1_END ? "b" : "p";
+  const typingB = f >= 40 && f < 300;
+  const typingP = f >= S1_END + 30 && f < 540;
+
+  drawTitle();
+  drawChip(f, mode);
+  drawCat(f, mode, typingB || typingP);
+  drawLaptop(f, typingB || typingP);
+
+  if (mode === "b") {
+    const typed = typedCount(40, 300, f, B_CHARS);
+    const pressed = f >= 300 && f < 316;
+    const outChars = typedCount(312, 350, f, OUT_TEXT.length);
+    drawCodeCard(f, BEGINNER_LINES, typed, pressed, typingB);
+    drawOutputCard(f, outChars, outChars >= OUT_TEXT.length ? "done in 2.10s  🐢" : null);
+  } else {
+    const typed = typedCount(S1_END + 30, 540, f, P_CHARS);
+    const pressed = f >= 540 && f < 556;
+    const outChars = typedCount(552, 566, f, OUT_TEXT.length);
+    drawCodeCard(f, PRO_LINES, typed, pressed, typingP);
+    drawOutputCard(f, outChars, outChars >= OUT_TEXT.length ? "done in 0.0001s ⚡" : null);
+  }
+
+  // smug nod in scene 3
+  if (f >= S2_END) {
+    const nod = Math.abs(Math.sin((f - S2_END) / 26)) * Math.max(0, 1 - (f - S2_END) / 110);
+    ctx.save();
+    ctx.translate(0, nod * 14);
+    drawCat(f, "p", false);
+    ctx.restore();
+    drawLaptop(f, false);
+  }
+
+  drawStamp(f);
+  drawNeonFrame();
+  drawWatermark();
+  ctx.globalAlpha = 1;
+}
+
+/* deterministic single-frame hook for the renderer */
+window.__setFrame = (n) => draw(n);
+window.__ready = true;
+draw(0);
+</script>
+</body>
+</html>
